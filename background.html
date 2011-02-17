@@ -1,0 +1,136 @@
+<html>
+<script>
+ const XT_VERSION = "0.998";	//other places: manifest, del-chrome.js
+ const BOOKMARK_PAGE_ACTION = "BookmarkPageAction";
+ const DEL_SHOST = "https://secure.delicious.com/";
+ const DEL_LOGIN_URL = DEL_SHOST+"login?jump=ub";
+ const DEL_CHROME_URL = "http://delicious.com/help/quicktour/chrome";
+ const DEL_HOME = "http://delicious.com/";
+ 
+ const DEL_INSTALL_SUCCESS = DEL_CHROME_URL;
+
+ var firstTimeStart = false;
+ 
+ if(typeof(DeliciousAddon) == "undefined") DeliciousAddon = {};
+ 
+</script>
+<script src="components/delLocalStore.js"></script>
+<script src="components/ssrDelicious.js"></script>
+<script src="components/syncService.js"></script>
+<script src="ybookmarksUtils.js"></script>
+<script src="del-chromeLib.js"></script>
+<script src="delXT.js"></script>
+<script>
+var tabPorts = [];
+//Get the version info.
+var extVersion = DeliciousAddon.LocalStorage.getExtensionVersion();
+if(!extVersion) { //fresh install
+    opera.postError("Fresh installation:" + XT_VERSION);
+    DeliciousAddon.LocalStorage.setExtensionVersion(XT_VERSION);
+    chrome.tabs.create({url : DEL_INSTALL_SUCCESS}, function(){});
+} else if(extVersion < XT_VERSION) { //upgrade
+    opera.postError("Upgrade to:" + XT_VERSION);
+    DeliciousAddon.LocalStorage.setExtensionVersion(XT_VERSION);
+    //chrome.tabs.create({url : DEL_INSTALL_SUCCESS}, function(){});//TODO:Change to upgrade page in future.
+}
+
+
+
+try {  
+  chrome.extension.onConnect.addListener(function(port) {
+    try {
+      tabPorts[port.tab.id] = port;
+      var tabId = port.tab.id;
+      var pageUrl = port.tab.url;
+      port.onMessage.addListener(function( msgObj ) {
+        try {
+          if(msgObj) {
+            if(msgObj.msg) {
+              switch(msgObj.msg) {
+              case "updateCookie":
+                //opera.postError("Update Cookie");
+                var oldCookie = DeliciousAddon.LocalStorage.getUserCookie();
+                if(!oldCookie && msgObj.cookie) {
+                  opera.postError("user logs in");  
+                  //user loggs in. full sync
+                  DeliciousAddon.LocalStorage.setUserCookie(msgObj.cookie);
+                  DeliciousAddon.LocalStorage.clearLocalStorage();
+                  syncService.syncNow();
+                }
+                else if(oldCookie && msgObj.cookie && oldCookie != msgObj.cookie) { //user changes his login
+                  opera.postError("login using a new-cookie.");  
+                  DeliciousAddon.LocalStorage.setUserCookie(msgObj.cookie);
+                  DeliciousAddon.LocalStorage.clearLocalStorage();
+                  syncService.syncNow();
+                }
+                else if(oldCookie && !msgObj.cookie) { //user logged out
+                  opera.postError("logout..");
+                  //clear local store
+                  DeliciousAddon.LocalStorage.setUserCookie("");
+                  DeliciousAddon.LocalStorage.clearLocalStorage();
+                }
+                break;
+              }
+            }
+          }
+        } catch(e) {
+          opera.postError("background::onMessage::Error"+e);
+        }
+      });
+    } catch(e) {
+      opera.postError("background::onConnect::Error"+e);
+    }
+  });
+} catch(e) {
+  opera.postError("background::onConnect.addListener::Error"+e);
+}
+
+
+//Indicate url status
+chrome.tabs.onUpdated.addListener(function( tabId, changeInfo, tab) {        
+        if(changeInfo) {//url is present only when it has changed
+            //opera.postError("Tab updated:" + tab.id + ",url:" + tab.url + ",status:" + changeInfo.status);
+            if(tab.url && (changeInfo.status == "loading")) {
+            	//set icon according to bookmark status
+            	DelXT.setBrowserActionIcon(tab);
+            }
+        }
+});
+
+//Update browser action on selection change
+chrome.tabs.onSelectionChanged.addListener(function(tabId, selectInfo){
+     DelXT.setBrowserAction();
+});
+
+//Start the transaction timer
+DelXT.startTransactionTimer();
+
+//Show last error.
+if(localStorage.getItem("ReportAddBookmarkError") == "true") {
+    DelXT.setBrowserAction();
+}
+
+function userLoggedinStatus() {
+  try {
+    if(DeliciousAddon.LocalStorage.getUserCookie()) {
+      return true;
+    } else return false;
+  } catch(e) {
+    opera.postError("background::userLoggedinStatus::Error"+e);
+  }
+}
+
+function onLoad() {
+  if(localStorage.length == 0) { //first time start
+    firstTimeStart = true;
+    DeliciousAddon.LocalStorage.setUserCookie("");
+    DeliciousAddon.LocalStorage.setPrefSyncEnabled(true);
+    localStorage.setItem("ReportAddBookmarkError", "false");
+  }
+}
+
+//call onload
+onLoad();
+
+</script>
+</html>

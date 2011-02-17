@@ -1,0 +1,185 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+	<style type="text/css">
+
+	body {
+		text-align: center;
+		font-size: 12px;
+		font-family: sans-serif;
+	}
+
+	#prefContainer, #tsnContainer {
+    background: white;
+    -webkit-border-bottom-left-radius: 4px 4px;
+    -webkit-border-bottom-right-radius: 4px 4px;
+    -webkit-border-top-left-radius: 4px 4px;
+    -webkit-border-top-right-radius: 4px 4px;
+    border: 1px solid rgb(222, 234, 248);
+    margin: 0px;
+    min-height: 198px;
+    vertical-align: top;
+    width: 500px;
+	}
+
+	#prefTitle, #tsnTitle {
+    -webkit-border-top-left-radius: 2px;
+    -webkit-border-top-right-radius: 2px;
+    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgb(98, 164, 245)), to(rgb(73, 138, 218)));
+    color: white;
+    display: block;
+    font-size: 13px;
+    font-weight: bold;
+    padding-bottom: 4px;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 4px;
+    margin: 0;
+	}
+
+	#prefList, #tsnList {
+		padding-right: 2px;
+		padding-left: 2px;
+		padding-bottom: 2px;
+		padding-top: 2px;
+		margin-right: 5px;
+		margin-left: 5px;
+		margin-bottom: 5px;
+		margin-top: 5px;
+	}
+
+	.prefItem {
+		padding-right: 5px;
+		padding-left: 5px;
+		padding-bottom: 5px;
+		padding-top: 5px;
+		margin-bottom: 10px;
+		margin-top: 5px;
+		border: 1px solid hsl(213, 65%, 92%);
+		-webkit-border-radius:2px;
+		text-align: left;
+	}
+	
+	.tsnItem {
+		padding-right: 3px;
+		padding-left: 3px;
+		padding-bottom: 3px;
+		padding-top: 3px;
+		margin-bottom: 5px;
+		margin-top: 3px;
+		text-align: left;
+	}
+	
+	hr {
+		color: black;
+	}
+	</style>
+  <script src="ybookmarksUtils.js"></script>
+  <script>
+    var bg = chrome.extension.getBackgroundPage();
+    //opera.postError(bg);
+		
+		function init() {
+			var username = ybookmarksUtils.getUsernameFromCookie(bg.DeliciousAddon.LocalStorage.getUserCookie());
+			document.getElementById("registerLink").setAttribute("href", bg.DEL_SHOST+"register?src="+bg.DEL_UA_STRING+bg.XT_VERSION);
+			if(bg.userLoggedinStatus()) {
+				document.getElementById("signedin").innerHTML = 'Signed in as <a href="'+bg.DEL_HOME+username+'">'+username+ '</a> on Delicious.';
+			} else {
+				document.getElementById("notsignedin").innerHTML = 'Not signed in. Please <a href="'+bg.DEL_LOGIN_URL+'">Sign in<a>';
+			}
+		}
+  </script>
+		<title>Delicious Extension Preferences</title>
+	</head>
+	<body onload="init();">
+  <div align="center">
+    <div id="prefContainer">
+      <h2 id="prefTitle">Delicious Extension Preferences</h2>
+      <div id="prefList">
+        <div class="prefItem">
+					<strong>Delicious Account</strong><hr/>
+					<div id="signedin"></div>
+					<div id="notsignedin"></div>
+					<div style="padding-top: 5px;"><a id="registerLink" href="#">Create a new Delicious Account</a></div>
+        </div>
+        <div class="prefItem">
+					<div><strong>Sync Bookmarks</strong><div><hr/>
+					<div>You can sync your Delicious Bookmarks with Google Chrome Bookmarks. </div>
+          <div style="padding-top: 5px;"><input id="chkSyncEnable" type="checkbox" onclick="sync(this);"/> Enable syncing of bookmarks.
+	  <input type="button" onclick="syncNow()" id="btnSyncNow" value="Sync Now"/>
+					</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <br/>
+  <div align="center">
+    <div id="tsnContainer" style="display:none;">
+      <h2 id="tsnTitle">List of bookmarks could not be synced with Delicious</h2>
+      <div id="tsnList">
+      </div>
+    </div>
+  </div>
+
+  <script>
+		function sync(chkbox) {
+			try {
+				if(chkbox.checked) {
+					bg.DeliciousAddon.LocalStorage.setPrefSyncEnabled("true");
+					document.getElementById("btnSyncNow").disabled = false;
+					//start periodic sync
+					bg.syncService.schedulePeriodicSync();
+				} else {
+					//stop syncs in progress
+					bg.syncService.cancelSync();//stop full sync
+					bg.syncService.stopPeriodicSync();//Stop periodic sync
+					document.getElementById("btnSyncNow").disabled = true;
+					//clear db n remove all bookmarks
+					bg.DeliciousAddon.LocalStorage.clearLocalStorage();
+					bg.DeliciousAddon.LocalStorage.setPrefSyncEnabled("false");
+				}
+			} catch(e) {
+				opera.postError(e);
+			} 
+		}
+
+		function syncNow() {
+			if(bg.userLoggedinStatus()) {
+				bg.DelXT.retryTransactions();
+				bg.syncService.syncNow();
+			} else {
+				alert("Not signed in. Please sign in first.");
+			}
+		}
+		
+		function showSyncStatus () {
+			if(bg.DeliciousAddon.LocalStorage.getPrefSyncEnabled() == "true") {
+				document.getElementById("chkSyncEnable").checked = true;
+				document.getElementById("btnSyncNow").disabled = false;
+				
+				/*bg.DeliciousAddon.LocalStorage.getAllTransactions({onsuccess: function (result) {
+					if(result.rows.length > 0) {
+						for(var i=0, j=result.rows.length; i<j; i++) {
+							var div = document.createElement("DIV");
+							div.setAttribute("class", "tsnItem");
+							var data = JSON.parse(result.rows.item(i).data);
+							div.innerHTML = '<a href="'+data.url+'">'+((data.title)?data.title:data.url)+'</a>';
+							document.getElementById("tsnList").appendChild(div);
+						}
+						
+						document.getElementById("tsnContainer").style.display = "block";
+					}
+				}});
+				*/
+			} else {
+				document.getElementById("chkSyncEnable").checked = false;
+				document.getElementById("btnSyncNow").disabled = true;
+				document.getElementById("tsnContainer").style.display = "none";
+			}
+		}
+		
+		showSyncStatus();
+  </script>
+	</body>
+</html>

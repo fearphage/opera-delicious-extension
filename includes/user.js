@@ -1,0 +1,1 @@
+opera.extension.postMessage('#ping');

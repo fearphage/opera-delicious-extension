@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget xmlns="http://www.w3.org/ns/widgets" id="extensions:stuff" version="0.5">
+  <name>catpants</name>
+  <description>foobar</description>
+  <author>blah</author>
+  <access origin="https://secure.delicious.com/"/>
+  <access origin="https://api.del.icio.us/"/>
+  <access origin="http://delicious.com/" subdomains="true" />
+</widget>

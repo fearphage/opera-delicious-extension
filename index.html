@@ -1,0 +1,259 @@
+<html>
+<script>
+ const XT_VERSION = "0.998";	//other places: manifest, del-chrome.js
+ const BOOKMARK_PAGE_ACTION = "BookmarkPageAction";
+ const DEL_SHOST = "https://secure.delicious.com/";
+ const DEL_LOGIN_URL = DEL_SHOST+"login?jump=ub";
+ const DEL_CHROME_URL = "http://delicious.com/help/quicktour/chrome";
+ const DEL_HOME = "http://delicious.com/";
+ 
+ const DEL_INSTALL_SUCCESS = DEL_CHROME_URL;
+
+ var firstTimeStart = false;
+ 
+ if(typeof(DeliciousAddon) == "undefined") DeliciousAddon = {};
+var theButton; 
+</script>
+<script src="components/delLocalStore.js"></script>
+<script src="components/ssrDelicious.js"></script>
+<script src="components/syncService.js"></script>
+<script src="ybookmarksUtils.js"></script>
+<script src="del-operaLib.js"></script>
+<script src="del-opera.js"></script>
+<script src="delXT.js"></script>
+<script>
+//document.addEventListener('domcontentloaded', function(){
+window.addEventListener('load', function(){
+    
+    var UIItemProperties = { // options for the button
+      	disabled: !!opera.extension.tabs.getFocused(),
+      	title: "Send to Delicious",
+      	icon: "skin/delTag.png",
+      	popup: {
+        	href: "popup.html",
+        	width: "400px",
+        	height: "500px"
+			}
+    };
+
+    theButton = opera.contexts.toolbar.createItem( UIItemProperties ); // create the button
+    opera.contexts.toolbar.addItem( theButton ); // add button to UI
+
+		var tabPorts = [];
+//Get the version info.
+var extVersion = DeliciousAddon.LocalStorage.getExtensionVersion();
+if(!extVersion) { //fresh install
+    debug("Fresh installation:" + XT_VERSION);
+    DeliciousAddon.LocalStorage.setExtensionVersion(XT_VERSION);
+    //opera.extension.tabs.create({url : DEL_INSTALL_SUCCESS}, function(){});
+} else if(extVersion < XT_VERSION) { //upgrade
+    debug("Upgrade to:" + XT_VERSION);
+    DeliciousAddon.LocalStorage.setExtensionVersion(XT_VERSION);
+    //chrome.tabs.create({url : DEL_INSTALL_SUCCESS}, function(){});//TODO:Change to upgrade page in future.
+}
+
+
+function _(obj) {
+	var array = []
+ for (var key in obj) {
+   array.push(key + ' = ' + obj[key]);
+ }
+ return array;
+}
+var toString = {}.toString;
+try { 
+
+/*debug([
+ toString.call(opera.extension)
+ ,opera.extension.onconnect +  ' / onconnect = ' + toString.call(opera.extension.onconnect)
+ ,opera.extension.onconnect'onConnect = ' + toString.call(opera.extension.onConnect)
+ ,opera.extension.onconnect ? toString.call(opera.extension.onconnect.addEventListener) : false
+ ,opera.extension.onConnect ? toString.call(opera.extension.onConnect.addEventListener) : false
+ ].join('\n'));*/
+  opera.extension.addEventListener('connect', function(port) {
+    try {
+			//debug(arguments.length  + ' / ' + port.onmessage + ' / ' + port.onMessage + '\n\n' + _(port.source).join('\n'));
+			//tab = port.target.tabs.getFocused();
+      tabPorts.push(port);
+			/*
+      var tabId = port.tab.id;
+      var pageUrl = port.tab.url;
+			*/
+      port.source.addEventListener('message', function( msgObj ) {
+        try {
+				debug('in tab message...\n\n' + _(msgObj).join('\n'));
+          if(msgObj) {
+            if(msgObj.msg) {
+              switch(msgObj.msg) {
+              case "updateCookie":
+                //debug("Update Cookie");
+                var oldCookie = DeliciousAddon.LocalStorage.getUserCookie();
+                if(!oldCookie && msgObj.cookie) {
+                  debug("user logs in");  
+                  //user loggs in. full sync
+                  DeliciousAddon.LocalStorage.setUserCookie(msgObj.cookie);
+                  DeliciousAddon.LocalStorage.clearLocalStorage();
+                  syncService.syncNow();
+                }
+                else if(oldCookie && msgObj.cookie && oldCookie != msgObj.cookie) { //user changes his login
+                  debug("login using a new-cookie.");  
+                  DeliciousAddon.LocalStorage.setUserCookie(msgObj.cookie);
+                  DeliciousAddon.LocalStorage.clearLocalStorage();
+                  syncService.syncNow();
+                }
+                else if(oldCookie && !msgObj.cookie) { //user logged out
+                  debug("logout..");
+                  //clear local store
+                  DeliciousAddon.LocalStorage.setUserCookie("");
+                  DeliciousAddon.LocalStorage.clearLocalStorage();
+                }
+                break;
+              }
+            }
+          }
+        } catch(e) {
+          debug("background::onMessage::Error"+e);
+        }
+      }, false);
+    } catch(e) {
+      debug("background::onConnect::Error"+e);
+    }
+  }, false);
+} catch(e) {
+  debug("background::onConnect.addListener::Error"+e);
+}
+
+function sendRequest(object) {
+	var source;
+	(source = Delicious.OperaUI.source) && source.postMessage(object);
+}
+function debug(text) {
+  opera.postError('index.html: ' + text);
+}
+var ports = [];
+opera.extension.addEventListener('message',function(e) {
+//	debug('request:\n\n' + _(e).join('\n'));
+	var
+		request = e.data
+		,tmp
+		,contentScriptLoaded = false
+	;
+Delicious.OperaUI.source = e.source;
+if (ports.indexOf(e.source) == -1) { ports.push(e.source); }
+//	debug(['request.id = ' + request.id, 'tab = ' + tab].join('\n'));	
+var tab = opera.extension.tabs.getFocused();
+	switch (request.id) {
+		case 'page-details':
+//			debug('details - ' +  (getSelection().toString()||null));
+			if (!tab) return;
+			e.source.postMessage({
+				action: request.id
+				,url: tab.url
+				,title: tab.title
+				,notes: getSelection().toString() || null
+			});
+		break;
+		case 'reset-add-failed':
+			DelXT.resetAddBookmarkFailed();
+			/*
+			e.source.postMessage({
+				action: request.id
+			})
+			
+			*/
+				break;
+		case 'set-badge-text':
+			theButton.badge.textContent = request.text;
+				break;
+		case 'last-bookmark-status':
+		case 'pre-flight-check':
+			tab || (tab = {phred: 1});
+			debug('pre flight - ' +  DelXT.getLastAddBookmarkStatus() + ' / ' + [tab.url, tab.title, request.notes]);
+			e.source.postMessage({
+				action: request.id
+				,status: DelXT.getLastAddBookmarkStatus()
+			});
+			if (!tab || (tab.phred === 1)) return;
+			contentScriptLoaded = true;
+			if (DelXT.getLastAddBookmarkStatus() === null) {
+                                contentScriptLoaded = true;
+                                Delicious.OperaUI.getURLDetailsfromServer(tab.url, tab.title, request.notes);
+//                                Delicious.OperaUI.getURLDetailsfromServer('http://google.com', 'http://google.com', 'http://google.com');
+                      	}
+                      
+			setTimeout(function() {
+				if(!contentScriptLoaded) {
+					Delicious.OperaUI.test(pageUrl, pageTitle, null);
+				}
+			}, 200);
+			return;
+			Delicious.OperaUI.getURLDetailsfromServer(pageUrl, pageTitle, null);
+			
+/*
+			sendRequest(e.source, {
+				action: request.id
+				,status: DelXT.getLastAddBookmarkStatus()
+			});
+*/
+			break;
+	case 'handle-save':
+		debug(_(request).join('\n'));
+		DelXT.handleSave(request.url, request.fd);
+		thebutton.icon = 'skin/delTagged.png';
+		break;
+	case 'update-badge':
+		break;
+}
+
+},false);
+
+DOMException.prototype.toString = function() {
+	return 'DOMException: ' + this.message;
+};
+
+//Indicate url status
+opera.extension.tabs.addEventListener('update', function( tabId, changeInfo, tab) {
+        if(changeInfo) {//url is present only when it has changed
+            //debug("Tab updated:" + tab.id + ",url:" + tab.url + ",status:" + changeInfo.status);
+            if(tab.url && (changeInfo.status == "loading")) {
+            	//set icon according to bookmark status
+            	DelXT.setBrowserActionIcon(tab);
+            }
+        }
+}, false);
+
+//Update browser action on selection change
+/*chrome.tabs.onSelectionChanged.addListener(function(tabId, selectInfo){
+     DelXT.setBrowserAction();
+});
+*/
+//Start the transaction timer
+DelXT.startTransactionTimer();
+
+//Show last error.
+if(localStorage.getItem("ReportAddBookmarkError") == "true") {
+    DelXT.setBrowserAction();
+}
+
+function userLoggedinStatus() {
+  try {
+    if(DeliciousAddon.LocalStorage.getUserCookie()) {
+      return true;
+    } else return false;
+  } catch(e) {
+    debug("background::userLoggedinStatus::Error"+e);
+  }
+}
+
+
+  if(localStorage.length == 0) { //first time start
+    firstTimeStart = true;
+    DeliciousAddon.LocalStorage.setUserCookie("");
+    DeliciousAddon.LocalStorage.setPrefSyncEnabled(true);
+    localStorage.setItem("ReportAddBookmarkError", "false");
+  }
+}, false);
+
+</script>
+<body class="debug"></body>
+</html>

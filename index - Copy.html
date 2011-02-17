@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head>
+<script>
+window.addEventListener("load", function(){
+    
+    var UIItemProperties = { // options for the button
+      	disabled: false,
+      	title: "Send to Delicious",
+      	icon: "skin/delTag.png",
+      	popup: {
+        	href: "popup.html",
+        	width: "400px",
+        	height: "500px"
+		},
+    }
+
+    var theButton = opera.contexts.toolbar.createItem( UIItemProperties ); // create the button
+    opera.contexts.toolbar.addItem( theButton ); // add button to UI
+
+}, false);
+</script>
+</head>
+<body>
+</body>
+</html>

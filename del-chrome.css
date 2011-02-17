@@ -1,0 +1,175 @@
+/*
+Copyright (c) 2007, Yahoo! Inc. All rights reserved.
+Code licensed under the BSD License:
+http://developer.yahoo.net/yui/license.txt
+version: 2.3.1
+*/
+body{color:#000;background:#FFF;}body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,input,textarea,p,blockquote,th,td{margin:0;padding:0;}table{border-collapse:collapse;border-spacing:0;}fieldset,img{border:0;}address,caption,cite,code,dfn,em,strong,th,var{font-style:normal;font-weight:normal;}li{list-style:none;}caption,th{text-align:left;}h1,h2,h3,h4,h5,h6{font-size:100%;font-weight:normal;}q:before,q:after{content:'';}abbr,acronym{border:0;font-variant:normal;}sup,sub{line-height:-1px;vertical-align:text-top;}sub{vertical-align:text-bottom;}input, textarea, select{font-family:inherit;font-size:inherit;font-weight:inherit;}/*
+Copyright (c) 2007, Yahoo! Inc. All rights reserved.
+Code licensed under the BSD License:
+http://developer.yahoo.net/yui/license.txt
+version: 2.3.1
+*/
+body {font:13px/1.22 arial,helvetica,clean,sans-serif;*font-size:small;*font:x-small;}table {font-size:inherit;font:100%;}pre,code,kbd,samp,tt{font-family:monospace;*font-size:108%;line-height:99%;}
+/* @group globalElements */
+#sfWebDebug {display:none}
+
+#chrome {width:361px; height:auto; overflow:hidden; margin:0 auto; text-align:left}
+#doc {margin:0; width:100%; min-width:0}
+
+.clr {clear:both; height:0; font-size:1px;}
+a {text-decoration:none; color:#1462C1}
+a:hover {text-decoration:underline}
+
+strong {font-weight:bold}
+em {font-style:italic}
+/* @end */
+
+
+/* @group loading & messages */
+.loadingError {margin:1em; font-weight:bold}
+.loadingError {color:#9E1919}
+
+#msgs div {display:block; margin:.6em 0 .8em 0; padding-left:20px; color:#333; font-size:92%; font-weight:normal}
+#msgs div.login,
+#msgs div.note {background: url(skin/icon_note.gif) no-repeat 0 0}
+#msgs div.error {color:#9E1919; background: url(skin/icon_error.gif) no-repeat 0 0}
+#msgs strong { font-weight:bold; padding-right:5px}
+#msgs div a {font-weight:bold}
+
+#loadingMsg {position:absolute; top:40%; left:25%; width:50%; padding:10px 0; background:#fff; font-weight:bold; font-size:120%; color:#7A7A7A; z-index:1000}
+#loadingMsg span {padding-left:24px; background:url(skin/busyarr_1.gif) no-repeat 0 2px }
+.loadingPage {opacity:.5}
+/* @end */
+
+
+/* @group buttons */
+.btn {display:block; float:left; margin-right:5px}
+.btn-cancel {margin:0;}
+.btn input,
+.btn a {display:block; padding:2px 15px; color:#fff; font-weight:bold; font-size:100%;
+    background:#aaa; border:1px solid #c1c1c1;
+   -moz-border-radius:12px; -webkit-border-radius:12px}
+.btn input:hover,
+.btn a:hover {color:#000; text-decoration:none; cursor:pointer}
+
+.btn-save input, .btn-save a {background-color:#7cba0f; border-color:#7cba0f}
+
+.is_firefox .btn input {padding:1px 15px}
+
+.bttns .loading {width:70px; height:24px;
+    background: url(skin/waitingDelicious01.gif) no-repeat center center}
+.bttns .loading input {display:none;}
+/* @end */
+
+
+/* @group header */
+#hd {position:relative; background:#fff; border-top:1px solid #fff; padding:8px}
+#hd h1 {padding:2px 0 0 21px; font-weight:bold; color:#000;
+    background:url(skin/delicious.16.gif) no-repeat 0 0}
+#hd span {position:absolute; top:12px; right:7px; color:#666; font-size:84%}
+#hd span em {font-weight:normal; color:#333; font-style:normal}
+/* @end */
+
+
+/* @group saveForm */
+.saveForm {padding:4px 13px 11px 8px; margin-bottom:10px; border-top:1px solid #F3F3F3}
+.saveForm li.field {clear:both; position:relative; margin:0 0 10px}
+.saveForm label {display:block; font-weight:bold; color:#666; padding-left:2px; font-size:92%}
+.saveForm input.text,
+.saveForm input.newTagInput,
+.saveForm textarea {width:100%; display:block; border:1px solid #ccc; border-color:#ccc #aaa #aaa #ccc; padding:1px 2px; color:#000}
+.saveForm textarea {height:2.4em}
+.saveForm .footer {height:2em; padding-top:7px}
+.saveForm .remember {padding:4px 0 0 4px; float:left}
+.saveForm .remember input {float:left; margin-top:1px}
+.saveForm .remember label {font-weight:normal; padding-left:18px; color:#333}
+.saveForm .bttns {position:absolute; right:-6px}
+
+
+.loadingPage .saveForm input.text,
+.loadingPage .saveForm input.newTagInput,
+.loadingPage .saveForm textarea {background:#F3F3F3}
+
+
+.saveForm .info {position:absolute; top:2px; right:0; color:#aaa; font-size:76%}
+.saveForm .info .counter em {font-weight:bold}
+.saveForm .info .active em {color:#3274D0}
+.saveForm .info .error {color:#9e1919}
+
+.saveForm li.msg {margin-top:-8px; padding-top:8px; padding-left:30px; display:none;
+    background:url(skin/chrome_msg.gif) no-repeat 15px -10px}
+.saveForm li.msg .info {top:10px}
+
+.saveForm li.error label,
+.saveForm li.error .info {color:#9e1919}
+.saveForm li.error input,
+.saveForm li.error textarea {border-color:#9e1919; background-color:#ffeeee}
+/* @end */
+
+
+/* @group tagLines */
+.tagLines {overflow:hidden; width:100%; background:white; border:1px solid #ccc; border-color:#ccc #aaa #aaa #ccc; padding:1px 3px 0 2px}
+.error .tagLines {border-color:#9e1919; background:#ffeeee}
+.tagLines li.newTagItem {float:left; position:relative; height:17px; margin:0 3px 2px 0; padding:0; background:#e8f1f7;
+    -moz-border-radius:3px; -webkit-border-radius:3px; }
+.tagLines li.newTagItem a {display:block; position:relative; padding:1px 18px 0 5px; color:#000; cursor:pointer; height:16px}
+.tagLines li.newTagItem:hover a {color:#005dc9;}
+.tagLines li.newTagItem a:hover {text-decoration:none}
+.tagLines li.newTagItem span {position:absolute; top:2px; right:2px; height:14px; width:13px;
+    filter:alpha(opacity=20); -moz-opacity:0.2; -khtml-opacity:0.2; opacity:0.2;
+    background:transparent url('skin/delAC.png') no-repeat 0 -60px}
+.tagLines li.newTagItem span:hover {filter:alpha(opacity=100); -moz-opacity:1; -khtml-opacity:1; opacity:1}
+.tagLines li em {font-style:normal}
+
+.tagLines li.flash {background:#C5D5E0}
+.tagLines li.flash a {color:#000}
+
+.tagLinesEnabled {margin-bottom:1em; width:100%; height:auto !important}
+.tagLinesEnabled .info {bottom:auto !important}
+.newTagsEditor {position:relative; width:100%; background:transparent}
+.tagLines li.newTagInputWrapper {width:100px; float:left; display:block; height:17px; margin:0 0 2px 0; padding:0; background:none}
+.tagLines li.newTagInputWrapper input {position:static !important; border:none !important; background:#fff; padding:1px !important}
+.error li.newTagInputWrapper input {background:#ffeeee}
+.tagLines li.clr {float:none; clear:both; height:0; margin:0; padding:0; position:static}
+
+.clearNewTags {position:absolute; left:3.6em; top:0; cursor:pointer; padding:0; font-size:84%}
+.clearNewTags span {color:#3274D0}
+.clearNewTags span: {text-decoration:underline}
+/* @end */
+
+
+/* @group AutoComplete */
+.yui-ac-container {position:absolute !important; zoom:1; width:16em; margin:19px 0 0; font-size:100%}
+.yui-ac-container .yui-ac-content {position:absolute; width:100%; background-color:#fff; border:1px solid #565656; overflow:hidden; z-index:100}
+.yui-ac-container ul {padding:0; width:100%}
+.yui-ac-container li {display:block; position:relative; float:none !important; padding:0 !important; margin:0 !important; cursor:default;
+    white-space:nowrap; min-height:0 !important;
+    padding-right:2em; color:#565656}
+.yui-ac-container li span {display:block; padding:0; margin:0}
+.yui-ac-container li strong {display:block; padding:1px 2px}
+.yui-ac-container li strong.for {color:#2261A0}
+.yui-ac-container li.yui-ac-highlight,
+.yui-ac-container li.yui-ac-prehighlight {cursor:pointer}
+.yui-ac-container li.yui-ac-highlight strong {background-color:#8F8F8F; color:#fff}
+.yui-ac-container li.yui-ac-highlight:hover strong,
+.yui-ac-container li.yui-ac-prehighlight strong {background-color:#6C6C6C; color:#fff}
+.send .yui-ac-container li.yui-ac-highlight strong,
+.yui-ac-container li.yui-ac-highlight strong.for {background-color:#7591BA; color:#fff}
+.send .yui-ac-container li:hover strong,
+.send .yui-ac-container li.yui-ac-prehighlight strong,
+.yui-ac-container li.yui-ac-highlight:hover strong.for,
+.yui-ac-container li.yui-ac-prehighlight strong.for {background-color:#5F7CA7; color:#fff}
+.yui-ac-container li em.numSaves {position:absolute; top:0; right:0; padding:1px 5px 0 0; font-weight:bold}
+
+
+
+.yui-ac-container li strong.del,
+.yui-ac-container li strong.delicious {padding-left:20px;
+    background:transparent url('skin/delAC.png') no-repeat 3px -36px}
+.yui-ac-container li strong.twitter {padding-left:20px;
+    background:transparent url('skin/delAC.png') no-repeat 3px -16px}
+.yui-ac-container li strong.email {padding-left:20px;
+    background:transparent url('skin/delAC.png') no-repeat 3px 4px}
+/* @end */
+

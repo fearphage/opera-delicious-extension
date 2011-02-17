@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget xmlns="http://www.w3.org/ns/widgets" id="extensions:delicious-extension" network="public">
+  <name>Delicious Extension</name>
+  <description>Saves the link on delicious</description>
+  <author>Shwetank</author>
+  <!--<credit>icon.png by Nicholas Roach released under a GPL license.</credit>-->
+  <security>
+    <access>
+      <protocol>http</protocol>
+      <protocol>https</protocol>
+    </access>
+  </security>
+</widget>

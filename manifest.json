@@ -1,0 +1,36 @@
+{
+"update_url":"http://clients2.google.com/service/update2/crx",
+  "name": "Delicious Bookmarks Extension (Beta)",
+
+  "version": "0.998",
+
+  "description": "Delicious Bookmarks is the official Chrome extension for Delicious, the world's leading social bookmarking service.",
+
+  "icons": {  "16": "skin/del16px.png",
+              "32": "skin/del32px.png",
+              "48": "skin/del48px.png",
+             "128": "skin/del128px.png" },
+
+  "background_page": "background.html", 
+  
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["contentScripts.js"],
+      "run_at": "document_start"
+    }
+  ],
+
+  "permissions": ["bookmarks", "tabs", "https://api.del.icio.us/", "http://*.delicious.com/", "https://*.delicious.com/"],
+
+  "browser_action": {
+    "name": "Save in Delicious",
+    "id": "ybDelBrowserAction",
+    "default_title": "Save in Delicious",
+    "default_icon": "skin/delTag.png",
+    "popup": "popup.html"
+  },
+  
+  "options_page": "options.html"
+}
+
